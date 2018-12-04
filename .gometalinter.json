@@ -1,0 +1,14 @@
+{
+    "Enable": [
+        "vet",
+        "golint",
+        "gocyclo",
+        "dupl",
+        "gosec"
+    ],
+    "Exclude": [
+        "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment .*",
+        "comment on .*",
+        ".*_test.go.*"
+    ]
+}
