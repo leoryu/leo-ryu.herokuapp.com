@@ -1,7 +1,8 @@
 package store
 
 import (
-	"github.com/labstack/echo"
+	"context"
+
 	"github.com/leoryu/leo-ryu.herokuapp.com/model"
 )
 
@@ -14,18 +15,20 @@ type Store interface {
 	DeletePaper(id string) error
 }
 
-func SavePaper(c echo.Context, paper *model.Paper) error {
+func SavePaper(c context.Context, paper *model.Paper) error {
 	return FromContext(c).SavePaper(paper)
+
 }
 
-func ModifyPaper(c echo.Context, paper *model.Paper) error {
+func ModifyPaper(c context.Context, paper *model.Paper) error {
 	return FromContext(c).ModifyPaper(paper)
 }
 
-func GetPaper(c echo.Context, id string) (*model.Paper, error) {
+func GetPaper(c context.Context, id string) (*model.Paper, error) {
 	return FromContext(c).GetPaper(id)
 }
 
-func DeletePaper(c echo.Context, id string) error {
+func DeletePaper(c context.Context, id string) error {
 	return FromContext(c).DeletePaper(id)
 }
+

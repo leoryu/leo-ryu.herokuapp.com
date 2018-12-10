@@ -1,6 +1,6 @@
 package store
 
-import "github.com/labstack/echo"
+import "context"
 
 const key = "store"
 
@@ -8,8 +8,8 @@ type Setter interface {
 	Set(string, interface{})
 }
 
-func FromContext(c echo.Context) Store {
-	return c.Get(key).(Store)
+func FromContext(c context.Context) Store {
+	return c.Value(key).(Store)
 }
 
 func ToContext(c Setter, store Store) {

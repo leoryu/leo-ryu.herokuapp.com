@@ -5,37 +5,27 @@ import (
 	"os"
 	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"github.com/leoryu/leo-ryu.herokuapp.com/model"
-
-	"github.com/dgrijalva/jwt-go"
-
-	"github.com/labstack/echo"
 )
 
+var secret = os.Getenv("SECRET")
+
 // Login is the handler of "/login".
-func Login(c echo.Context) error {
-	username := c.FormValue("username")
-	password := c.FormValue("password")
-
-	if username == os.Getenv("USERNAME") && password == os.Getenv("PASSWORD") {
-		// Create token
-		token := jwt.New(jwt.SigningMethodHS256)
-
-		// Set claims
-		claims := token.Claims.(jwt.MapClaims)
-		claims["name"] = "Leo Ryu"
-		claims["admin"] = true
-		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString(model.Secret)
-		if err != nil {
-			return err
-		}
-		return c.JSON(http.StatusOK, map[string]string{
-			"token": t,
-		})
+func Login(c *gin.Context) {
+	user := new(model.User)
+	if err := c.Bind(user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
-
-	return echo.ErrUnauthorized
+	token := jwt.New(jwt.GetSigningMethod("HS256"))
+	token.Claims = jwt.MapClaims{
+		"name": "Leo Ryu",
+		"exp":  time.Now().Add(72 * time.Hour).Unix(),
+	}
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }

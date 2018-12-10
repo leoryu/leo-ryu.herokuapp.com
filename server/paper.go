@@ -3,35 +3,47 @@ package server
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 	"github.com/leoryu/leo-ryu.herokuapp.com/model"
 	"github.com/leoryu/leo-ryu.herokuapp.com/store"
 )
 
-func PubilushPaper(c echo.Context) error {
+func PubilushPaper(c *gin.Context) {
 	paper := new(model.Paper)
-	if err := c.Bind(paper); err != nil {
-		return err
+	if err := c.ShouldBindJSON(paper); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	if c.Request().Method == echo.PUT {
-		return store.ModifyPaper(c, paper)
+	if c.Request.Method == "PUT" {
+		if err := store.ModifyPaper(c, paper); err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+			return
+		}
 	}
-	return store.SavePaper(c, paper)
+	if err := store.SavePaper(c, paper); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
 }
 
-func DeletePaper(c echo.Context) error {
+func DeletePaper(c *gin.Context) {
 	id := c.Param("id")
-	return store.DeletePaper(c, id)
+	if err := store.DeletePaper(c, id); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
 }
 
-func GetPaper(c echo.Context) error {
+func GetPaper(c *gin.Context) {
 	id := c.Param("id")
 	paper, err := store.GetPaper(c, id)
 	if err != nil {
-		return err
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
 	}
 	if paper == nil {
-		return echo.ErrNotFound
+		c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+		return
 	}
-	return c.JSON(http.StatusOK, paper)
+	c.JSON(http.StatusOK, paper)
 }
