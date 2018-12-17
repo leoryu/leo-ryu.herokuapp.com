@@ -8,19 +8,26 @@ import (
 	"github.com/leoryu/leo-ryu.herokuapp.com/store"
 )
 
-func PubilushPaper(c *gin.Context) {
+func CreatePaper(c *gin.Context) {
 	paper := new(model.Paper)
 	if err := c.ShouldBindJSON(paper); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if c.Request.Method == "PUT" {
-		if err := store.ModifyPaper(c, paper); err != nil {
-			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
-			return
-		}
-	}
 	if err := store.SavePaper(c, paper); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+}
+
+func EditPaper(c *gin.Context) {
+	paper := new(model.Paper)
+	id := c.Param("id")
+	if err := c.ShouldBindJSON(paper); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := store.ModifyPaper(c, paper, id); err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
@@ -47,3 +54,4 @@ func GetPaper(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, paper)
 }
+

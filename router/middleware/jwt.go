@@ -16,5 +16,6 @@ func Auth(secret string) gin.HandlerFunc {
 		if err != nil {
 			c.AbortWithError(401, err)
 		}
+		c.Next()
 	}
 }

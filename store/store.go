@@ -10,7 +10,7 @@ import (
 
 type Store interface {
 	SavePaper(paper *model.Paper) error
-	ModifyPaper(paper *model.Paper) error
+	ModifyPaper(paper *model.Paper, id string) error
 	GetPaper(id string) (*model.Paper, error)
 	DeletePaper(id string) error
 }
@@ -20,8 +20,8 @@ func SavePaper(c context.Context, paper *model.Paper) error {
 
 }
 
-func ModifyPaper(c context.Context, paper *model.Paper) error {
-	return FromContext(c).ModifyPaper(paper)
+func ModifyPaper(c context.Context, paper *model.Paper, id string) error {
+	return FromContext(c).ModifyPaper(paper, id)
 }
 
 func GetPaper(c context.Context, id string) (*model.Paper, error) {
