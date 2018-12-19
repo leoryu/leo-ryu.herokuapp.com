@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/leoryu/leo-ryu.herokuapp.com/model"
@@ -14,6 +15,8 @@ func CreatePaper(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	paper.CreatedAt = time.Now().UTC()
+	paper.EditedAt = time.Now().UTC()
 	if err := store.SavePaper(c, paper); err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
@@ -27,6 +30,7 @@ func EditPaper(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	paper.EditedAt = time.Now().UTC()
 	if err := store.ModifyPaper(c, paper, id); err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return

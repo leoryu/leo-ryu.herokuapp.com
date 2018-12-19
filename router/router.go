@@ -1,9 +1,8 @@
 package router
 
 import (
-	"os"
-
 	"github.com/gin-gonic/gin"
+	"github.com/leoryu/leo-ryu.herokuapp.com/config"
 	"github.com/leoryu/leo-ryu.herokuapp.com/router/middleware"
 	"github.com/leoryu/leo-ryu.herokuapp.com/server"
 	"github.com/leoryu/leo-ryu.herokuapp.com/store/datastore"
@@ -18,7 +17,7 @@ func Router() *gin.Engine {
 	api.GET("/paper/:id", server.GetPaper)
 	{
 		admin := api.Group("/admin")
-		admin.Use(middleware.Auth(os.Getenv("SECRET")))
+		admin.Use(middleware.Auth(config.GetSecret()))
 		admin.POST("/paper", server.CreatePaper)
 		admin.PUT("/paper/:id", server.EditPaper)
 		admin.DELETE("/paper/:id", server.DeletePaper)
