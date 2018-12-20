@@ -15,6 +15,7 @@ func Router() *gin.Engine {
 	api.Use(middleware.Store(datastore.New()))
 	api.POST("/login", server.Login)
 	api.GET("/paper/:id", server.GetPaper)
+	api.GET("/introductions", server.GetIntroductions)
 	{
 		admin := api.Group("/admin")
 		admin.Use(middleware.Auth(config.GetSecret()))
