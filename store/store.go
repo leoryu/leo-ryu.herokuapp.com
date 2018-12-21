@@ -13,7 +13,7 @@ type Store interface {
 	ModifyPaper(paper *model.Paper, id string) (int, error)
 	DeletePaper(id string) (int, error)
 	GetPaper(id string) (*model.Paper, error)
-	GetIntroductions(limit, page int) (count int, introductions []*model.IntroductionWithID, err error)
+	GetIntroductions(subject string, limit, page int) (count int, introductions []*model.IntroductionWithID, err error)
 }
 
 func SavePaper(c context.Context, paper *model.Paper) error {
@@ -33,7 +33,7 @@ func GetPaper(c context.Context, id string) (*model.Paper, error) {
 	return FromContext(c).GetPaper(id)
 }
 
-func GetIntroductions(c context.Context, limit, page int) (count int, introductions []*model.IntroductionWithID, err error) {
-	return FromContext(c).GetIntroductions(limit, page)
+func GetIntroductions(c context.Context, subject string, limit, page int) (count int, introductions []*model.IntroductionWithID, err error) {
+	return FromContext(c).GetIntroductions(subject, limit, page)
 }
 

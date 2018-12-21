@@ -23,6 +23,7 @@ func CreatePaper(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "Created paper successfully"})
 }
 
 func EditPaper(c *gin.Context) {
@@ -74,6 +75,7 @@ func GetPaper(c *gin.Context) {
 }
 
 func GetIntroductions(c *gin.Context) {
+	subject := c.Query("subject")
 	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
@@ -84,7 +86,7 @@ func GetIntroductions(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
-	count, introductions, err := store.GetIntroductions(c, limit, page)
+	count, introductions, err := store.GetIntroductions(c, subject, limit, page)
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return

@@ -81,18 +81,24 @@ func (d *datastore) GetPaper(id string) (*model.Paper, error) {
 	return &paper, err
 }
 
-func (d *datastore) GetIntroductions(limit, page int) (count int, introductions []*model.IntroductionWithID, err error) {
+func (d *datastore) GetIntroductions(subject string, limit, page int) (count int, introductions []*model.IntroductionWithID, err error) {
 	ctx, cancle := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancle()
 	collection := d.Client.Database(d.Database).Collection(d.Collection)
-	_count, err := collection.Count(ctx, nil)
+	var filter bson.M
+	if subject == "" {
+		filter = nil
+	} else {
+		filter = bson.M{"introduction.subject": subject}
+	}
+	_count, err := collection.Count(ctx, filter)
 	count = int(_count)
 	options := options.Find()
 	options.SetSort(bson.M{"_id": -1})
 	options.SetLimit(int64(limit))
 	options.SetSkip(int64(limit * (page - 1)))
 	options.SetProjection(bson.M{"_id": 1, "introduction": 1})
-	cursor, err := collection.Find(ctx, nil, options)
+	cursor, err := collection.Find(ctx, filter, options)
 	if err != nil {
 		return 0, nil, err
 	}
