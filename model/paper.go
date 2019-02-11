@@ -10,4 +10,3 @@ type Paper struct {
 	CreatedAt    time.Time    `json:"created_at" bson:"created_at"`
 	EditedAt     time.Time    `json:"edited_at" bson:"edited_at"`
 }
-
