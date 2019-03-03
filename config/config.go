@@ -15,9 +15,9 @@ func GetSecret() string {
 	return "secret"
 }
 
-func GetEmail() string {
+func GetUsername() string {
 	if isRelease() {
-		return os.Getenv("EMAIL")
+		return os.Getenv("USERNAME")
 	}
 	return "name"
 }

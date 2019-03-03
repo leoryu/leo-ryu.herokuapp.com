@@ -17,7 +17,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if user.Email != config.GetEmail() || user.Password != config.GetPassword() {
+	if user.Email != config.GetUsername() || user.Password != config.GetPassword() {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wrong email or password"})
 		return
 	}
@@ -32,4 +32,3 @@ func Login(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }
-
