@@ -19,14 +19,14 @@ func GetUsername() string {
 	if isRelease() {
 		return os.Getenv("USERNAME")
 	}
-	return "name"
+	return "abc"
 }
 
 func GetPassword() string {
 	if isRelease() {
 		return os.Getenv("PASSWORD")
 	}
-	return "111111"
+	return "123"
 }
 
 func GetDatabaseAddr() string {
