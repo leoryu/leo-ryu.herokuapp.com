@@ -140,10 +140,11 @@ func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page 
 func (pm *paperMongo) assembleWriter(p *core.Paper) (err error) {
 	if p.ID == "" {
 		pm.ID = primitive.NewObjectID()
-	}
-	pm.ID, err = primitive.ObjectIDFromHex(p.ID)
-	if err != nil {
-		return
+	} else {
+		pm.ID, err = primitive.ObjectIDFromHex(p.ID)
+		if err != nil {
+			return err
+		}
 	}
 	pm.Abstract = p.Abstract
 	pm.Content = p.Content
@@ -164,4 +165,3 @@ func (pm *paperMongo) assembleReader(p *core.Paper) (err error) {
 	p.UpdatedAt = pm.UpdatedAt
 	return
 }
-
