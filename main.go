@@ -14,14 +14,13 @@ import (
 	"github.com/leoryu/leo-ryu.herokuapp.com/store/mongoimpl/paper"
 )
 
-var tokenAuth *jwtauth.JWTAuth
 
 func main() {
 	mongoClient := mongoimpl.NewConnect(config.GetDatabaseAddr())
 	paperStore := paper.New(mongoClient, config.GetDatabaseName(), "paper")
 	userService := user.New(config.GetUsername(), config.GetPassword(), config.GetSecret(), 72)
 	apiServer := api.New(paperStore, userService)
-	tokenAuth = jwtauth.New("HS256", []byte(config.GetSecret()), nil)
+	tokenAuth := jwtauth.New("HS256", []byte(config.GetSecret()), nil)
 	log.Fatal(http.ListenAndServe(":7777", provideRouter(apiServer, tokenAuth)))
 }
 

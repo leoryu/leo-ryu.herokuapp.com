@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	paper struct {
+	paperMongo struct {
 		ID        primitive.ObjectID `bson:"_id"`
 		Title     string             `bson:"title"`
 		Tags      map[string]bool    `bson:"tags"`
@@ -38,22 +38,33 @@ func New(client *mongo.Client, database, collection string) core.PaperStore {
 }
 
 func (store *paperStore) Create(ctx context.Context, paper *core.Paper) error {
+	if err := store.Client.Connect(ctx); err != nil {
+		return err
+	}
+	p := new(paperMongo)
+	p.assembleWriter(paper)
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
-	_, err := collection.InsertOne(ctx, paper)
+	_, err := collection.InsertOne(ctx, p)
 	return err
 }
 
 func (store *paperStore) Update(ctx context.Context, paper *core.Paper) error {
-	_id, err := primitive.ObjectIDFromHex(paper.ID)
-	if err != nil {
+	if err := store.Client.Connect(ctx); err != nil {
+		return err
+	}
+	p := new(paperMongo)
+	if err := p.assembleWriter(paper); err != nil {
 		return err
 	}
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
-	_, err = collection.UpdateOne(ctx, bson.M{"_id": _id}, bson.M{"$set": paper})
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": p.ID}, bson.M{"$set": p})
 	return err
 }
 
 func (store *paperStore) Delete(ctx context.Context, id string) error {
+	if err := store.Client.Connect(ctx); err != nil {
+		return err
+	}
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -64,17 +75,22 @@ func (store *paperStore) Delete(ctx context.Context, id string) error {
 }
 
 func (store *paperStore) Find(ctx context.Context, id string) (*core.Paper, error) {
+	if err := store.Client.Connect(ctx); err != nil {
+		return nil, err
+	}
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	var paper core.Paper
+	p := new(paperMongo)
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
-	err = collection.FindOne(ctx, bson.M{"_id": _id}).Decode(&paper)
+	err = collection.FindOne(ctx, bson.M{"_id": _id}).Decode(p)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
-	return &paper, err
+	paper := new(core.Paper)
+	err = p.assembleReader(paper)
+	return paper, err
 }
 
 func (store *paperStore) List(ctx context.Context, limit, page int) ([]*core.Paper, error) {
@@ -82,6 +98,9 @@ func (store *paperStore) List(ctx context.Context, limit, page int) ([]*core.Pap
 }
 
 func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page int) ([]*core.Paper, error) {
+	if err := store.Client.Connect(ctx); err != nil {
+		return nil, err
+	}
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
 	var filter bson.M
 	if tag == "" {
@@ -101,19 +120,15 @@ func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page 
 	defer cursor.Close(ctx)
 	var papers []*core.Paper
 	for cursor.Next(ctx) {
-		var p core.Paper
-		var _p paper
-		err := cursor.Decode(&_p)
-		if err != nil {
+		paper := new(core.Paper)
+		p := new(paperMongo)
+		if err := cursor.Decode(p); err != nil {
 			return nil, err
 		}
-		p.ID = _p.ID.Hex()
-		p.Title = _p.Title
-		p.Tags = _p.Tags
-		p.Abstract = _p.Abstract
-		p.CreatedAt = _p.CreatedAt
-		p.UpdatedAt = _p.UpdatedAt
-		papers = append(papers, &p)
+		if err := p.assembleReader(paper); err != nil {
+			return nil, err
+		}
+		papers = append(papers, paper)
 	}
 	err = cursor.Err()
 	if err == mongo.ErrNoDocuments {
@@ -121,3 +136,32 @@ func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page 
 	}
 	return papers, err
 }
+
+func (pm *paperMongo) assembleWriter(p *core.Paper) (err error) {
+	if p.ID == "" {
+		pm.ID = primitive.NewObjectID()
+	}
+	pm.ID, err = primitive.ObjectIDFromHex(p.ID)
+	if err != nil {
+		return
+	}
+	pm.Abstract = p.Abstract
+	pm.Content = p.Content
+	pm.CreatedAt = p.CreatedAt
+	pm.Tags = p.Tags
+	pm.Title = p.Title
+	pm.UpdatedAt = p.UpdatedAt
+	return
+}
+
+func (pm *paperMongo) assembleReader(p *core.Paper) (err error) {
+	p.ID = pm.ID.Hex()
+	p.Abstract = pm.Abstract
+	p.Content = pm.Content
+	p.CreatedAt = pm.CreatedAt
+	p.Tags = pm.Tags
+	p.Title = pm.Title
+	p.UpdatedAt = pm.UpdatedAt
+	return
+}
+
