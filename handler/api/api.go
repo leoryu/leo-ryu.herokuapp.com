@@ -35,7 +35,7 @@ func (s Server) Handler(ja *jwtauth.JWTAuth) http.Handler {
 	r.Post("/verify", user.HandleVrify(s.UserService))
 
 	r.Route("/papers", func(r chi.Router) {
-		r.Get("/", nil)
+		r.Get("/", papers.HandleList(s.PaperStore))
 		r.Get("/{id}", papers.HandleFind(s.PaperStore))
 
 		r.Group(func(r chi.Router) {

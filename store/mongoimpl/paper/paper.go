@@ -12,16 +12,6 @@ import (
 )
 
 type (
-	paperMongo struct {
-		ID        primitive.ObjectID `bson:"_id"`
-		Title     string             `bson:"title"`
-		Tags      map[string]bool    `bson:"tags"`
-		Abstract  string             `bson:"abstract"`
-		Content   string             `bson:"content"`
-		CreatedAt int64              `bson:"created_at"`
-		UpdatedAt int64              `bson:"updated_at"`
-	}
-
 	paperStore struct {
 		Client     *mongo.Client
 		Database   string
@@ -38,22 +28,16 @@ func New(client *mongo.Client, database, collection string) core.PaperStore {
 }
 
 func (store *paperStore) Create(ctx context.Context, paper *core.Paper) error {
-	if err := store.Client.Connect(ctx); err != nil {
-		return err
-	}
 	p := new(paperMongo)
-	p.assembleWriter(paper)
+	p.assembleInput(paper)
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
 	_, err := collection.InsertOne(ctx, p)
 	return err
 }
 
 func (store *paperStore) Update(ctx context.Context, paper *core.Paper) error {
-	if err := store.Client.Connect(ctx); err != nil {
-		return err
-	}
 	p := new(paperMongo)
-	if err := p.assembleWriter(paper); err != nil {
+	if err := p.assembleInput(paper); err != nil {
 		return err
 	}
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
@@ -62,9 +46,6 @@ func (store *paperStore) Update(ctx context.Context, paper *core.Paper) error {
 }
 
 func (store *paperStore) Delete(ctx context.Context, id string) error {
-	if err := store.Client.Connect(ctx); err != nil {
-		return err
-	}
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return err
@@ -75,9 +56,6 @@ func (store *paperStore) Delete(ctx context.Context, id string) error {
 }
 
 func (store *paperStore) Find(ctx context.Context, id string) (*core.Paper, error) {
-	if err := store.Client.Connect(ctx); err != nil {
-		return nil, err
-	}
 	_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -89,18 +67,11 @@ func (store *paperStore) Find(ctx context.Context, id string) (*core.Paper, erro
 		return nil, nil
 	}
 	paper := new(core.Paper)
-	err = p.assembleReader(paper)
+	err = p.assembleOutput(paper)
 	return paper, err
 }
 
-func (store *paperStore) List(ctx context.Context, limit, page int) ([]*core.Paper, error) {
-	return store.ListByTag(ctx, "", limit, page)
-}
-
-func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page int) ([]*core.Paper, error) {
-	if err := store.Client.Connect(ctx); err != nil {
-		return nil, err
-	}
+func (store *paperStore) List(ctx context.Context, tag string, limit, page int) ([]*core.Paper, error) {
 	collection := store.Client.Database(store.Database).Collection(store.Collection)
 	var filter bson.M
 	if tag == "" {
@@ -125,7 +96,7 @@ func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page 
 		if err := cursor.Decode(p); err != nil {
 			return nil, err
 		}
-		if err := p.assembleReader(paper); err != nil {
+		if err := p.assembleOutput(paper); err != nil {
 			return nil, err
 		}
 		papers = append(papers, paper)
@@ -137,31 +108,3 @@ func (store *paperStore) ListByTag(ctx context.Context, tag string, limit, page 
 	return papers, err
 }
 
-func (pm *paperMongo) assembleWriter(p *core.Paper) (err error) {
-	if p.ID == "" {
-		pm.ID = primitive.NewObjectID()
-	} else {
-		pm.ID, err = primitive.ObjectIDFromHex(p.ID)
-		if err != nil {
-			return err
-		}
-	}
-	pm.Abstract = p.Abstract
-	pm.Content = p.Content
-	pm.CreatedAt = p.CreatedAt
-	pm.Tags = p.Tags
-	pm.Title = p.Title
-	pm.UpdatedAt = p.UpdatedAt
-	return
-}
-
-func (pm *paperMongo) assembleReader(p *core.Paper) (err error) {
-	p.ID = pm.ID.Hex()
-	p.Abstract = pm.Abstract
-	p.Content = pm.Content
-	p.CreatedAt = pm.CreatedAt
-	p.Tags = pm.Tags
-	p.Title = pm.Title
-	p.UpdatedAt = pm.UpdatedAt
-	return
-}
