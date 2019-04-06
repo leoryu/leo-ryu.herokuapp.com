@@ -3,12 +3,14 @@ package render
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/drone/drone/handler/api/errors"
 )
 
+type Error struct {
+	Message string `json:"message"`
+}
+
 func ErrorCode(w http.ResponseWriter, err error, status int) {
-	JSON(w, &errors.Error{Message: err.Error()}, status)
+	JSON(w, Error{Message: err.Error()}, status)
 }
 
 func InternalError(w http.ResponseWriter, err error) {
