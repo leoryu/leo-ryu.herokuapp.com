@@ -36,6 +36,7 @@ func (s Server) Handler(ja *jwtauth.JWTAuth) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.NoCache)
+	r.Use(middleware.Logger)
 
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
