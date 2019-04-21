@@ -27,12 +27,13 @@ func main() {
 	userService := user.New(config.GetUsername(), config.GetPassword(), config.GetSecret(), 72)
 	apiServer := api.New(paperStore, userService)
 	tokenAuth := jwtauth.New("HS256", []byte(config.GetSecret()), nil)
-	log.Fatal(http.ListenAndServe(":7777", provideRouter(apiServer, tokenAuth)))
+	router := provideRouter(apiServer, tokenAuth)
+	api.FileServer(router, "/", config.GetStaticFilesPath())
+	log.Fatal(http.ListenAndServe(":7777", router))
 }
 
-func provideRouter(api api.Server, tokenAuth *jwtauth.JWTAuth) http.Handler {
+func provideRouter(api api.Server, tokenAuth *jwtauth.JWTAuth) chi.Router {
 	r := chi.NewRouter()
 	r.Mount("/api", api.Handler(tokenAuth))
 	return r
 }
-

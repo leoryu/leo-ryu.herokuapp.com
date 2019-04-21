@@ -37,7 +37,14 @@ func GetDatabaseAddr() string {
 }
 
 func GetDatabaseName() string {
+	if isRelease() {
+		return os.Getenv("DB_NAME")
+	}
 	return "test"
+}
+
+func GetStaticFilesPath() string {
+	return os.Getenv("BLOG_STATIC_FILES_PATH")
 }
 
 func isRelease() bool {
