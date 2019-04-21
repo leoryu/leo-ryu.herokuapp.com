@@ -47,6 +47,13 @@ func GetStaticFilesPath() string {
 	return os.Getenv("BLOG_STATIC_FILES_PATH")
 }
 
+func GetListenAddr() string {
+	if isRelease() {
+		return ":" + os.Getenv("PORT")
+	}
+	return ":7777"
+}
+
 func isRelease() bool {
 	return Mode == RELEASE_MODE
 }

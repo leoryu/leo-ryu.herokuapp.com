@@ -29,7 +29,7 @@ func main() {
 	tokenAuth := jwtauth.New("HS256", []byte(config.GetSecret()), nil)
 	router := provideRouter(apiServer, tokenAuth)
 	api.FileServer(router, "/", config.GetStaticFilesPath())
-	log.Fatal(http.ListenAndServe(":7777", router))
+	log.Fatal(http.ListenAndServe(config.GetListenAddr(), router))
 }
 
 func provideRouter(api api.Server, tokenAuth *jwtauth.JWTAuth) chi.Router {
