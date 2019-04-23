@@ -55,6 +55,7 @@ func (s Server) Handler(ja *jwtauth.JWTAuth) http.Handler {
 
 		r.Group(func(r chi.Router) {
 			r.Use(jwtauth.Verifier(ja))
+			r.Use(jwtauth.Authenticator)
 			r.Post("/", papers.HandleCreate(s.PaperStore))
 			r.Put("/{id}", papers.HandleUpdate(s.PaperStore))
 			r.Delete("/{id}", papers.HandleDelete(s.PaperStore))
